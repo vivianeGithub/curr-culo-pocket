@@ -1,0 +1,65 @@
+import streamlit as st
+import base64
+from io import BytesIO
+
+st.set_page_config(page_title="Currículo Pocket", page_icon="📝")
+
+st.title("Currículo Pocket")
+st.caption("Gere seu currículo de forma simples e rápida!")
+
+nome = st.text_input("Nome completo")
+nascimento = st.date_input("Data de nascimento")
+estado_civil = st.selectbox("Estado civil", ["Solteiro(a)", "Casado(a)", "Divorciado(a)", "Viúvo(a)"])
+cidade = st.text_input("Cidade/Estado")
+telefone = st.text_input("Telefone")
+email = st.text_input("E-mail")
+linkedin = st.text_input("LinkedIn (opcional)")
+formacao = st.text_area("Formação acadêmica")
+experiencia = st.text_area("Experiências profissionais")
+cursos = st.text_area("Cursos complementares")
+foto = st.file_uploader("Envie uma foto para o currículo (opcional)", type=["png", "jpg", "jpeg"])
+assinatura = st.text_input("Assinatura (nome completo para finalização)")
+
+def gerar_curriculo():
+    conteudo = f"""
+    *Nome:* {nome}  
+    *Data de Nascimento:* {nascimento.strftime('%d/%m/%Y')}  
+    *Estado Civil:* {estado_civil}  
+    *Cidade/Estado:* {cidade}  
+    *Telefone:* {telefone}  
+    *E-mail:* {email}  
+    """
+    if linkedin:
+        conteudo += f"*LinkedIn:* {linkedin}\n"
+    conteudo += f"""
+    ---
+    ### Formação Acadêmica:
+    {formacao}
+
+    ### Experiência Profissional:
+    {experiencia}
+
+    ### Cursos Complementares:
+    {cursos}
+
+    ---
+    *Assinatura:* {assinatura}
+    """
+    return conteudo
+
+def baixar_pdf(texto):
+    buffer = BytesIO()
+    buffer.write(texto.encode())
+    buffer.seek(0)
+    b64 = base64.b64encode(buffer.read()).decode()
+    href = f'<a href="data:application/octet-stream;base64,{b64}" download="curriculo.txt">Clique aqui para baixar seu currículo</a>'
+    return href
+
+if st.button("Gerar Currículo"):
+    if nome and telefone and email and formacao and experiencia:
+        curriculo = gerar_curriculo()
+        st.markdown("### Currículo Gerado:")
+        st.text(curriculo)
+        st.markdown(baixar_pdf(curriculo), unsafe_allow_html=True)
+    else:
+        st.warning("Por favor, preencha os campos obrigatórios.")
